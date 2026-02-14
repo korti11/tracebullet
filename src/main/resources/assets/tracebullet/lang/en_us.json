@@ -1,0 +1,13 @@
+{
+  "itemGroup.tracebullet": "Example Mod Tab",
+  "block.tracebullet.example_block": "Example Block",
+  "item.tracebullet.example_item": "Example Item",
+
+  "tracebullet.configuration.title": "Trace Bullet Configs",
+  "tracebullet.configuration.section.tracebullet.common.toml": "Trace Bullet Configs",
+  "tracebullet.configuration.section.tracebullet.common.toml.title": "Trace Bullet Configs",
+  "tracebullet.configuration.items": "Item List",
+  "tracebullet.configuration.logDirtBlock": "Log Dirt Block",
+  "tracebullet.configuration.magicNumberIntroduction": "Magic Number Text",
+  "tracebullet.configuration.magicNumber": "Magic Number"
+}
