@@ -1,5 +1,7 @@
 package io.korti.tracebullet;
 
+import io.korti.tracebullet.metrics.TPSMetric;
+import io.korti.tracebullet.otel.OpenTelemetryMetricRegistry;
 import io.korti.tracebullet.otel.OpenTelemetrySetupHandler;
 import io.korti.tracebullet.threading.ThreadPool;
 import io.korti.tracebullet.threading.ThreadPoolManager;
@@ -48,6 +50,12 @@ public class TraceBullet {
 
 		// Register thread pools
 		THREAD_POOL_MANAGER.registerScheduledThreadPool(ThreadPool.METRIC, Config.SCHEDULE_THREAD_POOL_SIZE);
+		NeoForge.EVENT_BUS.register(OpenTelemetryMetricRegistry.create(NeoForge.EVENT_BUS));
+		registerMetrics();
+	}
+
+	private void registerMetrics() {
+		NeoForge.EVENT_BUS.register(new TPSMetric());
 	}
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
