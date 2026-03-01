@@ -19,4 +19,9 @@ public class InstrumentationScopeNames {
 	 * Instrumentation scope name for metrics around the server.
 	 */
 	public static final String SERVER = "server";
+
+	/**
+	 * Instrumentation scope name for metrics around the world.
+	 */
+	public static final String WORLD = "world";
 }
