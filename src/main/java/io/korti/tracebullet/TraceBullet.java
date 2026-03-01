@@ -1,5 +1,6 @@
 package io.korti.tracebullet;
 
+import io.korti.tracebullet.otel.OpenTelemetrySetupHandler;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -31,6 +32,7 @@ public class TraceBullet {
         // Note that this is necessary if and only if we want *this* class (TraceBullet) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(new OpenTelemetrySetupHandler());
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
@@ -39,7 +41,6 @@ public class TraceBullet {
     private void commonSetup(FMLCommonSetupEvent event) {
         // Some common setup code
         LOGGER.info("HELLO FROM COMMON SETUP");
-
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
