@@ -12,7 +12,6 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -23,7 +22,6 @@ import static java.util.Objects.requireNonNull;
 public class OpenTelemetryMetricRegistry implements MetricRegistry {
 
 	private static final int INITIAL_DELAY_SECONDS = 30;
-	private static final int WRITING_PERIOD_SECONDS = 10;
 
 	private final Map<Class<? extends Metric>, ScheduledFuture<?>> runnables = new ConcurrentHashMap<>();
 
@@ -45,7 +43,7 @@ public class OpenTelemetryMetricRegistry implements MetricRegistry {
 	@Override
 	public void register(Metric metric) {
 		ScheduledFuture<?> runnable = metricsThreadPool
-				.scheduleAtFixedRate(metric::write, INITIAL_DELAY_SECONDS, WRITING_PERIOD_SECONDS, TimeUnit.SECONDS);
+				.scheduleAtFixedRate(metric::write, INITIAL_DELAY_SECONDS, metric.getWritingPeriod(), TimeUnit.SECONDS);
 
 		runnables.put(metric.getClass(), runnable);
 	}

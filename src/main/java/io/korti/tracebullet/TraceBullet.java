@@ -1,5 +1,6 @@
 package io.korti.tracebullet;
 
+import io.korti.tracebullet.metrics.PlayerCountMetric;
 import io.korti.tracebullet.metrics.TPSMetric;
 import io.korti.tracebullet.otel.OpenTelemetryMetricRegistry;
 import io.korti.tracebullet.otel.OpenTelemetrySetupHandler;
@@ -56,6 +57,7 @@ public class TraceBullet {
 
 	private void registerMetrics() {
 		NeoForge.EVENT_BUS.register(new TPSMetric());
+		NeoForge.EVENT_BUS.register(new PlayerCountMetric());
 	}
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
