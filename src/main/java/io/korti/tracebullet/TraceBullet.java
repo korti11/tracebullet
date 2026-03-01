@@ -1,6 +1,8 @@
 package io.korti.tracebullet;
 
 import io.korti.tracebullet.otel.OpenTelemetrySetupHandler;
+import io.korti.tracebullet.threading.ThreadPool;
+import io.korti.tracebullet.threading.ThreadPoolManager;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -21,6 +23,8 @@ public class TraceBullet {
     public static final String MODID = "tracebullet";
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
+    // Manager of thread pools for the mod
+    public static final ThreadPoolManager THREAD_POOL_MANAGER = new ThreadPoolManager();
 
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
@@ -41,6 +45,9 @@ public class TraceBullet {
     private void commonSetup(FMLCommonSetupEvent event) {
         // Some common setup code
         LOGGER.info("HELLO FROM COMMON SETUP");
+
+        // Register thread pools
+        THREAD_POOL_MANAGER.registerScheduledThreadPool(ThreadPool.METRIC, Config.SCHEDULE_THREAD_POOL_SIZE);
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
