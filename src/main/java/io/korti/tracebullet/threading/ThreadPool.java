@@ -1,16 +1,16 @@
 package io.korti.tracebullet.threading;
 
 public enum ThreadPool {
-    METRIC("metric"),
-    ;
+	METRIC("metric"),
+	;
 
-    private final String name;
+	private final String name;
 
-    ThreadPool(String name) {
-        this.name = name;
-    }
+	ThreadPool(String name) {
+		this.name = name;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 }

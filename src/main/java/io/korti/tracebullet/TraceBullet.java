@@ -19,41 +19,41 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(TraceBullet.MODID)
 public class TraceBullet {
-    // Define mod id in a common place for everything to reference
-    public static final String MODID = "tracebullet";
-    // Directly reference a slf4j logger
-    public static final Logger LOGGER = LogUtils.getLogger();
-    // Manager of thread pools for the mod
-    public static final ThreadPoolManager THREAD_POOL_MANAGER = new ThreadPoolManager();
+	// Define mod id in a common place for everything to reference
+	public static final String MODID = "tracebullet";
+	// Directly reference a slf4j logger
+	public static final Logger LOGGER = LogUtils.getLogger();
+	// Manager of thread pools for the mod
+	public static final ThreadPoolManager THREAD_POOL_MANAGER = new ThreadPoolManager();
 
-    // The constructor for the mod class is the first code that is run when your mod is loaded.
-    // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
-    public TraceBullet(IEventBus modEventBus, ModContainer modContainer) {
-        // Register the commonSetup method for modloading
-        modEventBus.addListener(this::commonSetup);
+	// The constructor for the mod class is the first code that is run when your mod is loaded.
+	// FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
+	public TraceBullet(IEventBus modEventBus, ModContainer modContainer) {
+		// Register the commonSetup method for modloading
+		modEventBus.addListener(this::commonSetup);
 
-        // Register ourselves for server and other game events we are interested in.
-        // Note that this is necessary if and only if we want *this* class (TraceBullet) to respond directly to events.
-        // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
-        NeoForge.EVENT_BUS.register(this);
-        NeoForge.EVENT_BUS.register(new OpenTelemetrySetupHandler());
+		// Register ourselves for server and other game events we are interested in.
+		// Note that this is necessary if and only if we want *this* class (TraceBullet) to respond directly to events.
+		// Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
+		NeoForge.EVENT_BUS.register(this);
+		NeoForge.EVENT_BUS.register(new OpenTelemetrySetupHandler());
 
-        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
-        modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
-    }
+		// Register our mod's ModConfigSpec so that FML can create and load the config file for us
+		modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+	}
 
-    private void commonSetup(FMLCommonSetupEvent event) {
-        // Some common setup code
-        LOGGER.info("HELLO FROM COMMON SETUP");
+	private void commonSetup(FMLCommonSetupEvent event) {
+		// Some common setup code
+		LOGGER.info("HELLO FROM COMMON SETUP");
 
-        // Register thread pools
-        THREAD_POOL_MANAGER.registerScheduledThreadPool(ThreadPool.METRIC, Config.SCHEDULE_THREAD_POOL_SIZE);
-    }
+		// Register thread pools
+		THREAD_POOL_MANAGER.registerScheduledThreadPool(ThreadPool.METRIC, Config.SCHEDULE_THREAD_POOL_SIZE);
+	}
 
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-        // Do something when the server starts
-        LOGGER.info("HELLO from server starting");
-    }
+	// You can use SubscribeEvent and let the Event Bus discover methods to call
+	@SubscribeEvent
+	public void onServerStarting(ServerStartingEvent event) {
+		// Do something when the server starts
+		LOGGER.info("HELLO from server starting");
+	}
 }

@@ -24,57 +24,57 @@ import java.util.List;
 
 public class OpenTelemetrySetupHandler {
 
-    private OpenTelemetrySdk registeredSdk;
+	private OpenTelemetrySdk registeredSdk;
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public void setup(ServerStartedEvent event) {
-        String otelEnvironment = Config.OTEL_URL.get();
-        if (Strings.isBlank(otelEnvironment)) {
-            TraceBullet.LOGGER.info("No OTel URL configured skipping setup.");
-            return;
-        }
+	@SubscribeEvent(priority = EventPriority.HIGHEST)
+	public void setup(ServerStartedEvent event) {
+		String otelEnvironment = Config.OTEL_URL.get();
+		if (Strings.isBlank(otelEnvironment)) {
+			TraceBullet.LOGGER.info("No OTel URL configured skipping setup.");
+			return;
+		}
 
-        TraceBullet.LOGGER.info("Setup OTel exporter.");
-        String serviceNameOverride = Config.SERVICE_NAME_OVERRIDE.get();
+		TraceBullet.LOGGER.info("Setup OTel exporter.");
+		String serviceNameOverride = Config.SERVICE_NAME_OVERRIDE.get();
 
-        AttributesBuilder attributes = Attributes.builder();
-        String serverName = Strings.isBlank(serviceNameOverride) ? event.getServer().getWorldData().getLevelName() : serviceNameOverride;
-        attributes.put("service.name", serverName);
+		AttributesBuilder attributes = Attributes.builder();
+		String serverName = Strings.isBlank(serviceNameOverride) ? event.getServer().getWorldData().getLevelName() : serviceNameOverride;
+		attributes.put("service.name", serverName);
 
-        List<? extends String> customAttributes = Config.CUSTOM_ATTRIBUTES.get();
-        for (String customAttribute : customAttributes) {
-            String[] split = customAttribute.split("=", 2);
-            if (split.length == 2) {
-                attributes.put(split[0], split[1]);
-            }
-        }
+		List<? extends String> customAttributes = Config.CUSTOM_ATTRIBUTES.get();
+		for (String customAttribute : customAttributes) {
+			String[] split = customAttribute.split("=", 2);
+			if (split.length == 2) {
+				attributes.put(split[0], split[1]);
+			}
+		}
 
-        OtlpHttpMetricExporter metricExporter = OtlpHttpMetricExporter.builder()
-                .setEndpoint(otelEnvironment + "/v1/metrics")
-                .setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
-                .build();
+		OtlpHttpMetricExporter metricExporter = OtlpHttpMetricExporter.builder()
+				.setEndpoint(otelEnvironment + "/v1/metrics")
+				.setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+				.build();
 
-        SdkMeterProvider meterProvider = SdkMeterProvider.builder()
-                .setResource(Resource.getDefault().merge(Resource.create(attributes.build())))
-                .registerMetricReader(PeriodicMetricReader.builder(metricExporter).build())
-                .build();
+		SdkMeterProvider meterProvider = SdkMeterProvider.builder()
+				.setResource(Resource.getDefault().merge(Resource.create(attributes.build())))
+				.registerMetricReader(PeriodicMetricReader.builder(metricExporter).build())
+				.build();
 
-        registeredSdk = OpenTelemetrySdk.builder()
-                .setMeterProvider(meterProvider)
-                .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-                .buildAndRegisterGlobal();
-    }
+		registeredSdk = OpenTelemetrySdk.builder()
+				.setMeterProvider(meterProvider)
+				.setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+				.buildAndRegisterGlobal();
+	}
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    public void shutdown(ServerStoppingEvent event) {
-        TraceBullet.LOGGER.info("Closing OTel exporter.");
-        if (registeredSdk != null) {
-            registeredSdk.close();
-            registeredSdk = null;
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public void shutdown(ServerStoppingEvent event) {
+		TraceBullet.LOGGER.info("Closing OTel exporter.");
+		if (registeredSdk != null) {
+			registeredSdk.close();
+			registeredSdk = null;
 
-            // Note: Only really needed for
-            GlobalOpenTelemetry.resetForTest();
-        }
-    }
+			// Note: Only really needed for
+			GlobalOpenTelemetry.resetForTest();
+		}
+	}
 
 }
