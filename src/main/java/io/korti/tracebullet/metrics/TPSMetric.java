@@ -20,14 +20,19 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class TPSMetric implements Metric {
 
-	private static final String METRIC_NAME = "minecraft.server.tps";
-	private static final String DESCRIPTION = "TPS of Minecraft Server.";
-	private static final String UNIT = "tps";
+	private static final String TPS_METRIC_NAME = "minecraft.server.tps";
+	private static final String TPS_DESCRIPTION = "TPS of Minecraft Server.";
+	private static final String TPS_UNIT = "tps";
+
+	private static final String TICK_TIME_METRIC_NAME = "minecraft.server.tick_time";
+	private static final String TICK_TIME_DESCRIPTION = "Mean tick time per dimension.";
+	private static final String TICK_TIME_UNIT = "ms";
 
 	private static final AttributeKey<String> SERVER_NAME = AttributeKey.stringKey("server.name");
 	private static final AttributeKey<String> DIMENSION_NAME = AttributeKey.stringKey("dimension.name");
 
 	private final AtomicReference<DoubleGauge> tpsGauge = new AtomicReference<>();
+	private final AtomicReference<DoubleGauge> tickTimeGauge = new AtomicReference<>();
 	private final AtomicReference<TPSCalculator> tpsCalculator = new AtomicReference<>();
 
 	@Override
@@ -36,7 +41,8 @@ public class TPSMetric implements Metric {
 		Metric.super.register(event);
 
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.SERVER);
-		tpsGauge.set(meter.gaugeBuilder(METRIC_NAME).setDescription(DESCRIPTION).setUnit(UNIT).build());
+		tpsGauge.set(meter.gaugeBuilder(TPS_METRIC_NAME).setDescription(TPS_DESCRIPTION).setUnit(TPS_UNIT).build());
+		tickTimeGauge.set(meter.gaugeBuilder(TICK_TIME_METRIC_NAME).setDescription(TICK_TIME_DESCRIPTION).setUnit(TICK_TIME_UNIT).build());
 	}
 
 	@Override
@@ -44,6 +50,7 @@ public class TPSMetric implements Metric {
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
 		Metric.super.unregister(event);
 		tpsGauge.set(null);
+		tickTimeGauge.set(null);
 	}
 
 	@SubscribeEvent
@@ -58,13 +65,14 @@ public class TPSMetric implements Metric {
 
 	@Override
 	public void write() {
-		DoubleGauge gauge = tpsGauge.get();
+		DoubleGauge tps = tpsGauge.get();
+		DoubleGauge tickTime = tickTimeGauge.get();
 		TPSCalculator calculator = tpsCalculator.get();
-		if (gauge == null || calculator == null) {
+		if (tps == null || tickTime == null || calculator == null) {
 			return;
 		}
 
-		calculator.calculateAndWrite(gauge);
+		calculator.calculateAndWrite(tps, tickTime);
 	}
 
 	private static class TPSCalculator {
@@ -77,7 +85,7 @@ public class TPSMetric implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(DoubleGauge gauge) {
+		void calculateAndWrite(DoubleGauge tpsGauge, DoubleGauge tickTimeGauge) {
 			if (server == null) {
 				return;
 			}
@@ -86,26 +94,26 @@ public class TPSMetric implements Metric {
 			Iterable<ServerLevel> levels = server.getAllLevels();
 			for (ServerLevel level : levels) {
 				String levelName = level.dimension().identifier().toString();
+				Attributes attributes = Attributes.of(SERVER_NAME, serverName, DIMENSION_NAME, levelName);
 
-				gauge.set(calculateTps(server, level), Attributes.of(SERVER_NAME, serverName, DIMENSION_NAME, levelName));
+				double tickTimeMs = calculateTickTimeMs(server, level);
+				TickRateManager tickRateManager = level == null ? server.tickRateManager() : level.tickRateManager();
+				double tps = TimeUtil.MILLISECONDS_PER_SECOND / Math.max(tickTimeMs, tickRateManager.millisecondsPerTick());
+
+				tpsGauge.set(tps, attributes);
+				tickTimeGauge.set(tickTimeMs, attributes);
 			}
 		}
 
-		private double calculateTps(MinecraftServer server, ServerLevel level) {
+		private double calculateTickTimeMs(MinecraftServer server, ServerLevel level) {
 			long[] times;
-			TickRateManager tickRateManager;
-
 			if (level == null) {
 				times = server.getTickTimesNanos();
-				tickRateManager = server.tickRateManager();
 			} else {
 				var dimensionTimes = server.getTickTime(level.dimension());
 				times = dimensionTimes == null ? UNLOADED : dimensionTimes;
-				tickRateManager = level.tickRateManager();
 			}
-
-			double tickTime = Stats.meanOf(times) / TimeUtil.NANOSECONDS_PER_MILLISECOND;
-			return TimeUtil.MILLISECONDS_PER_SECOND / Math.max(tickTime, tickRateManager.millisecondsPerTick());
+			return Stats.meanOf(times) / TimeUtil.NANOSECONDS_PER_MILLISECOND;
 		}
 	}
 
