@@ -10,6 +10,7 @@ import io.opentelemetry.api.metrics.Meter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
@@ -26,13 +27,23 @@ public class WorldChunkMetrics implements Metric {
 	private static final String FORCE_LOADED_CHUNKS_METRIC_NAME = "minecraft.server.world.chunks.force_loaded";
 	private static final String FORCE_LOADED_CHUNKS_DESCRIPTION = "Currently force loaded chunks of the world.";
 
+	private static final String CHUNK_LOAD_METRIC_NAME = "minecraft.server.world.chunk.load";
+	private static final String CHUNK_LOAD_DESCRIPTION = "Number of chunks loaded per dimension.";
+
+	private static final String CHUNK_UNLOAD_METRIC_NAME = "minecraft.server.world.chunk.unload";
+	private static final String CHUNK_UNLOAD_DESCRIPTION = "Number of chunks unloaded per dimension.";
+
 	private static final String UNIT = "count";
+	private static final String CHUNK_RATE_UNIT = "{chunk}";
 
 	private static final AttributeKey<String> SERVER_NAME = AttributeKey.stringKey("server.name");
 	private static final AttributeKey<String> DIMENSION_NAME = AttributeKey.stringKey("dimension.name");
 
 	private final AtomicReference<LongCounter> loadedChunksCounter = new AtomicReference<>();
 	private final AtomicReference<LongCounter> forceLoadedChunksCounter = new AtomicReference<>();
+	private final AtomicReference<LongCounter> chunkLoadCounter = new AtomicReference<>();
+	private final AtomicReference<LongCounter> chunkUnloadCounter = new AtomicReference<>();
+
 	private final AtomicReference<WorldChunkCalculator> worldChunkCalculator = new AtomicReference<>();
 
 	@Override
@@ -52,6 +63,18 @@ public class WorldChunkMetrics implements Metric {
 						.setUnit(UNIT)
 						.build()
 		);
+		chunkLoadCounter.set(
+				meter.counterBuilder(CHUNK_LOAD_METRIC_NAME)
+						.setDescription(CHUNK_LOAD_DESCRIPTION)
+						.setUnit(CHUNK_RATE_UNIT)
+						.build()
+		);
+		chunkUnloadCounter.set(
+				meter.counterBuilder(CHUNK_UNLOAD_METRIC_NAME)
+						.setDescription(CHUNK_UNLOAD_DESCRIPTION)
+						.setUnit(CHUNK_RATE_UNIT)
+						.build()
+		);
 	}
 
 	@Override
@@ -59,6 +82,9 @@ public class WorldChunkMetrics implements Metric {
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
 		Metric.super.unregister(event);
 		loadedChunksCounter.set(null);
+		forceLoadedChunksCounter.set(null);
+		chunkLoadCounter.set(null);
+		chunkUnloadCounter.set(null);
 	}
 
 	@SubscribeEvent
@@ -69,6 +95,40 @@ public class WorldChunkMetrics implements Metric {
 	@SubscribeEvent
 	public void onServerStopping(ServerStoppingEvent event) {
 		worldChunkCalculator.set(null);
+	}
+
+	@SubscribeEvent
+	public void onChunkLoad(ChunkEvent.Load event) {
+		if (!(event.getLevel() instanceof ServerLevel level)) {
+			return;
+		}
+		LongCounter counter = chunkLoadCounter.get();
+		if (counter == null) {
+			return;
+		}
+
+		Attributes attributes = Attributes.of(
+				SERVER_NAME, level.getServer().getWorldData().getLevelName(),
+				DIMENSION_NAME, level.dimension().identifier().toString()
+		);
+		counter.add(1, attributes);
+	}
+
+	@SubscribeEvent
+	public void onChunkUnload(ChunkEvent.Unload event) {
+		if (!(event.getLevel() instanceof ServerLevel level)) {
+			return;
+		}
+		LongCounter counter = chunkUnloadCounter.get();
+		if (counter == null) {
+			return;
+		}
+
+		Attributes attributes = Attributes.of(
+				SERVER_NAME, level.getServer().getWorldData().getLevelName(),
+				DIMENSION_NAME, level.dimension().identifier().toString()
+		);
+		counter.add(1, attributes);
 	}
 
 	@Override
