@@ -4,7 +4,7 @@ import io.korti.tracebullet.metrics.BlockEntityMetrics;
 import io.korti.tracebullet.metrics.EntityMetrics;
 import io.korti.tracebullet.metrics.ItemEntityMetrics;
 import io.korti.tracebullet.metrics.PlayerLatencyMetric;
-import io.korti.tracebullet.metrics.JvmMemoryMetric;
+import io.korti.tracebullet.metrics.JvmMetrics;
 import io.korti.tracebullet.metrics.PlayerCountMetric;
 import io.korti.tracebullet.metrics.TPSMetric;
 import io.korti.tracebullet.metrics.WorldChunkMetrics;
@@ -66,7 +66,7 @@ public class TraceBullet {
 		NeoForge.EVENT_BUS.register(new PlayerCountMetric());
 		NeoForge.EVENT_BUS.register(new WorldChunkMetrics());
 		NeoForge.EVENT_BUS.register(new EntityMetrics());
-		NeoForge.EVENT_BUS.register(new JvmMemoryMetric());
+		NeoForge.EVENT_BUS.register(new JvmMetrics());
 		NeoForge.EVENT_BUS.register(new BlockEntityMetrics());
 		NeoForge.EVENT_BUS.register(new ItemEntityMetrics());
 		NeoForge.EVENT_BUS.register(new PlayerLatencyMetric());
