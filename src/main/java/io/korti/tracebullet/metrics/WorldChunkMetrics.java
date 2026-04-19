@@ -6,6 +6,7 @@ import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.Meter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -33,14 +34,13 @@ public class WorldChunkMetrics implements Metric {
 	private static final String CHUNK_UNLOAD_METRIC_NAME = "minecraft.server.world.chunk.unload";
 	private static final String CHUNK_UNLOAD_DESCRIPTION = "Number of chunks unloaded per dimension.";
 
-	private static final String UNIT = "count";
-	private static final String CHUNK_RATE_UNIT = "{chunk}";
+	private static final String CHUNK_UNIT = "{chunk}";
 
 	private static final AttributeKey<String> SERVER_NAME = AttributeKey.stringKey("server.name");
 	private static final AttributeKey<String> DIMENSION_NAME = AttributeKey.stringKey("dimension.name");
 
-	private final AtomicReference<LongCounter> loadedChunksCounter = new AtomicReference<>();
-	private final AtomicReference<LongCounter> forceLoadedChunksCounter = new AtomicReference<>();
+	private final AtomicReference<LongGauge> loadedChunksGauge = new AtomicReference<>();
+	private final AtomicReference<LongGauge> forceLoadedChunksGauge = new AtomicReference<>();
 	private final AtomicReference<LongCounter> chunkLoadCounter = new AtomicReference<>();
 	private final AtomicReference<LongCounter> chunkUnloadCounter = new AtomicReference<>();
 
@@ -51,28 +51,30 @@ public class WorldChunkMetrics implements Metric {
 	public void register(MetricEvent.RegisterMetricEvent event) {
 		Metric.super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.WORLD);
-		loadedChunksCounter.set(
-				meter.counterBuilder(LOADED_CHUNKS_METRIC_NAME)
+		loadedChunksGauge.set(
+				meter.gaugeBuilder(LOADED_CHUNKS_METRIC_NAME)
 						.setDescription(LOADED_CHUNKS_DESCRIPTION)
-						.setUnit(UNIT)
+						.setUnit(CHUNK_UNIT)
+						.ofLongs()
 						.build()
 		);
-		forceLoadedChunksCounter.set(
-				meter.counterBuilder(FORCE_LOADED_CHUNKS_METRIC_NAME)
+		forceLoadedChunksGauge.set(
+				meter.gaugeBuilder(FORCE_LOADED_CHUNKS_METRIC_NAME)
 						.setDescription(FORCE_LOADED_CHUNKS_DESCRIPTION)
-						.setUnit(UNIT)
+						.setUnit(CHUNK_UNIT)
+						.ofLongs()
 						.build()
 		);
 		chunkLoadCounter.set(
 				meter.counterBuilder(CHUNK_LOAD_METRIC_NAME)
 						.setDescription(CHUNK_LOAD_DESCRIPTION)
-						.setUnit(CHUNK_RATE_UNIT)
+						.setUnit(CHUNK_UNIT)
 						.build()
 		);
 		chunkUnloadCounter.set(
 				meter.counterBuilder(CHUNK_UNLOAD_METRIC_NAME)
 						.setDescription(CHUNK_UNLOAD_DESCRIPTION)
-						.setUnit(CHUNK_RATE_UNIT)
+						.setUnit(CHUNK_UNIT)
 						.build()
 		);
 	}
@@ -81,8 +83,8 @@ public class WorldChunkMetrics implements Metric {
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
 		Metric.super.unregister(event);
-		loadedChunksCounter.set(null);
-		forceLoadedChunksCounter.set(null);
+		loadedChunksGauge.set(null);
+		forceLoadedChunksGauge.set(null);
 		chunkLoadCounter.set(null);
 		chunkUnloadCounter.set(null);
 	}
@@ -138,8 +140,8 @@ public class WorldChunkMetrics implements Metric {
 
 	@Override
 	public void write() {
-		LongCounter loadedChunks = loadedChunksCounter.get();
-		LongCounter forceLoadedChunks = forceLoadedChunksCounter.get();
+		LongGauge loadedChunks = loadedChunksGauge.get();
+		LongGauge forceLoadedChunks = forceLoadedChunksGauge.get();
 		WorldChunkCalculator calculator = worldChunkCalculator.get();
 		if (loadedChunks == null || forceLoadedChunks == null || calculator == null) {
 			return;
@@ -156,7 +158,7 @@ public class WorldChunkMetrics implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(LongCounter loadedChunks, LongCounter forceLoadedChunks) {
+		void calculateAndWrite(LongGauge loadedChunks, LongGauge forceLoadedChunks) {
 			if (server == null) {
 				return;
 			}
@@ -167,8 +169,8 @@ public class WorldChunkMetrics implements Metric {
 				String levelName = level.dimension().identifier().toString();
 
 				Attributes attributes = Attributes.of(SERVER_NAME, serverName, DIMENSION_NAME, levelName);
-				loadedChunks.add(level.getChunkSource().getLoadedChunksCount(), attributes);
-				forceLoadedChunks.add(level.getChunkSource().getForceLoadedChunks().size(), attributes);
+				loadedChunks.set(level.getChunkSource().getLoadedChunksCount(), attributes);
+				forceLoadedChunks.set(level.getChunkSource().getForceLoadedChunks().size(), attributes);
 			}
 		}
 	}

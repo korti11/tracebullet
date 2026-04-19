@@ -6,7 +6,7 @@ import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.Meter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +30,7 @@ public class EntityMetrics implements Metric {
 	private static final String ENTITY_LIVING_METRIC_NAME = "minecraft.server.world.entity.living";
 	private static final String ENTITY_LIVING_DESCRIPTION = "Amount of living entities in the world.";
 
-	private static final String UNIT = "count";
+	private static final String UNIT = "{entity}";
 
 	private static final AttributeKey<String> SERVER_NAME = AttributeKey.stringKey("server.name");
 	private static final AttributeKey<String> DIMENSION_NAME = AttributeKey.stringKey("dimension.name");
@@ -38,7 +38,7 @@ public class EntityMetrics implements Metric {
 	private static final AttributeKey<Long> CHUNK_POS_X = AttributeKey.longKey("chunk.pos.x");
 	private static final AttributeKey<Long> CHUNK_POS_Z = AttributeKey.longKey("chunk.pos.z");
 
-	private final AtomicReference<LongCounter> livingEntityCounter = new AtomicReference<>();
+	private final AtomicReference<LongGauge> livingEntityGauge = new AtomicReference<>();
 	private final AtomicReference<EntityCalculator> entityCalculator = new AtomicReference<>();
 
 	@Override
@@ -46,10 +46,11 @@ public class EntityMetrics implements Metric {
 	public void register(MetricEvent.RegisterMetricEvent event) {
 		Metric.super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.WORLD);
-		livingEntityCounter.set(
-				meter.counterBuilder(ENTITY_LIVING_METRIC_NAME)
+		livingEntityGauge.set(
+				meter.gaugeBuilder(ENTITY_LIVING_METRIC_NAME)
 						.setDescription(ENTITY_LIVING_DESCRIPTION)
 						.setUnit(UNIT)
+						.ofLongs()
 						.build()
 		);
 	}
@@ -58,7 +59,7 @@ public class EntityMetrics implements Metric {
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
 		Metric.super.unregister(event);
-		livingEntityCounter.set(null);
+		livingEntityGauge.set(null);
 	}
 
 	@SubscribeEvent
@@ -78,7 +79,7 @@ public class EntityMetrics implements Metric {
 
 	@Override
 	public void write() {
-		LongCounter livingEntities = livingEntityCounter.get();
+		LongGauge livingEntities = livingEntityGauge.get();
 		EntityCalculator calculator = entityCalculator.get();
 		if (livingEntities == null || calculator == null) {
 			return;
@@ -95,7 +96,7 @@ public class EntityMetrics implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(LongCounter livingEntities) {
+		void calculateAndWrite(LongGauge livingEntities) {
 			if (server == null) {
 				return;
 			}
@@ -122,7 +123,7 @@ public class EntityMetrics implements Metric {
 							.put(CHUNK_POS_X, x)
 							.put(CHUNK_POS_Z, z);
 
-					livingEntities.add(entry.getValue(), builder.build());
+					livingEntities.set(entry.getValue(), builder.build());
 				}
 			}
 		}

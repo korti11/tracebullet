@@ -6,7 +6,7 @@ import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.Meter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -30,7 +30,7 @@ public class ItemEntityMetrics implements Metric {
 
 	private static final String METRIC_NAME = "minecraft.server.world.entity.item";
 	private static final String DESCRIPTION = "Amount of item entities per chunk in the world.";
-	private static final String UNIT = "count";
+	private static final String UNIT = "{entity}";
 
 	private static final AttributeKey<String> SERVER_NAME = AttributeKey.stringKey("server.name");
 	private static final AttributeKey<String> DIMENSION_NAME = AttributeKey.stringKey("dimension.name");
@@ -38,7 +38,7 @@ public class ItemEntityMetrics implements Metric {
 	private static final AttributeKey<Long> CHUNK_POS_X = AttributeKey.longKey("chunk.pos.x");
 	private static final AttributeKey<Long> CHUNK_POS_Z = AttributeKey.longKey("chunk.pos.z");
 
-	private final AtomicReference<LongCounter> itemEntityCounter = new AtomicReference<>();
+	private final AtomicReference<LongGauge> itemEntityGauge = new AtomicReference<>();
 	private final AtomicReference<ItemEntityCalculator> itemEntityCalculator = new AtomicReference<>();
 
 	@Override
@@ -46,10 +46,11 @@ public class ItemEntityMetrics implements Metric {
 	public void register(MetricEvent.RegisterMetricEvent event) {
 		Metric.super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.WORLD);
-		itemEntityCounter.set(
-				meter.counterBuilder(METRIC_NAME)
+		itemEntityGauge.set(
+				meter.gaugeBuilder(METRIC_NAME)
 						.setDescription(DESCRIPTION)
 						.setUnit(UNIT)
+						.ofLongs()
 						.build()
 		);
 	}
@@ -58,7 +59,7 @@ public class ItemEntityMetrics implements Metric {
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
 		Metric.super.unregister(event);
-		itemEntityCounter.set(null);
+		itemEntityGauge.set(null);
 	}
 
 	@SubscribeEvent
@@ -78,13 +79,13 @@ public class ItemEntityMetrics implements Metric {
 
 	@Override
 	public void write() {
-		LongCounter counter = itemEntityCounter.get();
+		LongGauge gauge = itemEntityGauge.get();
 		ItemEntityCalculator calculator = itemEntityCalculator.get();
-		if (counter == null || calculator == null) {
+		if (gauge == null || calculator == null) {
 			return;
 		}
 
-		calculator.calculateAndWrite(counter);
+		calculator.calculateAndWrite(gauge);
 	}
 
 	private static class ItemEntityCalculator {
@@ -95,7 +96,7 @@ public class ItemEntityMetrics implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(LongCounter counter) {
+		void calculateAndWrite(LongGauge gauge) {
 			if (server == null) {
 				return;
 			}
@@ -127,7 +128,7 @@ public class ItemEntityMetrics implements Metric {
 							.put(CHUNK_POS_X, (long) x)
 							.put(CHUNK_POS_Z, (long) z);
 
-					counter.add(entry.getValue().value, builder.build());
+					gauge.set(entry.getValue().value, builder.build());
 				}
 			}
 		}

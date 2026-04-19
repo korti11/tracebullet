@@ -51,7 +51,7 @@ public class OpenTelemetrySetupHandler {
 
 		OtlpHttpMetricExporter metricExporter = OtlpHttpMetricExporter.builder()
 				.setEndpoint(otelEnvironment + "/v1/metrics")
-				.setAggregationTemporalitySelector(AggregationTemporalitySelector.deltaPreferred())
+				.setAggregationTemporalitySelector(AggregationTemporalitySelector.alwaysCumulative())
 				.build();
 
 		SdkMeterProvider meterProvider = SdkMeterProvider.builder()

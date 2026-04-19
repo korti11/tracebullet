@@ -5,7 +5,7 @@ import io.korti.tracebullet.api.metrics.Metric;
 import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.Meter;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -21,11 +21,11 @@ public class PlayerCountMetric implements Metric {
 
 	private static final String METRIC_NAME = "minecraft.server.player.count";
 	private static final String DESCRIPTION = "Current connected players.";
-	private static final String UNIT = "count";
+	private static final String UNIT = "{player}";
 
 	private static final AttributeKey<String> SERVER_NAME = AttributeKey.stringKey("server.name");
 
-	private final AtomicReference<LongCounter> playerCounter = new AtomicReference<>();
+	private final AtomicReference<LongGauge> playerGauge = new AtomicReference<>();
 	private final AtomicReference<MinecraftServer> minecraftServerRef = new AtomicReference<>();
 
 	@Override
@@ -33,14 +33,14 @@ public class PlayerCountMetric implements Metric {
 	public void register(MetricEvent.RegisterMetricEvent event) {
 		Metric.super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.SERVER);
-		playerCounter.set(meter.counterBuilder(METRIC_NAME).setDescription(DESCRIPTION).setUnit(UNIT).build());
+		playerGauge.set(meter.gaugeBuilder(METRIC_NAME).setDescription(DESCRIPTION).setUnit(UNIT).ofLongs().build());
 	}
 
 	@Override
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
 		Metric.super.unregister(event);
-		playerCounter.set(null);
+		playerGauge.set(null);
 	}
 
 	@SubscribeEvent
@@ -61,9 +61,9 @@ public class PlayerCountMetric implements Metric {
 	@Override
 	public void write() {
 		MinecraftServer server = minecraftServerRef.get();
-		LongCounter counter = playerCounter.get();
+		LongGauge gauge = playerGauge.get();
 
 		String serverName = server.getWorldData().getLevelName();
-		counter.add(server.getPlayerCount(), Attributes.of(SERVER_NAME, serverName));
+		gauge.set(server.getPlayerCount(), Attributes.of(SERVER_NAME, serverName));
 	}
 }

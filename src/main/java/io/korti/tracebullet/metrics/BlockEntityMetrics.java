@@ -6,7 +6,7 @@ import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.Meter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -29,7 +29,7 @@ public class BlockEntityMetrics implements Metric {
 
 	private static final String METRIC_NAME = "minecraft.server.world.block_entity";
 	private static final String DESCRIPTION = "Amount of block entities per chunk in the world.";
-	private static final String UNIT = "count";
+	private static final String UNIT = "{block_entity}";
 
 	private static final AttributeKey<String> SERVER_NAME = AttributeKey.stringKey("server.name");
 	private static final AttributeKey<String> DIMENSION_NAME = AttributeKey.stringKey("dimension.name");
@@ -37,7 +37,7 @@ public class BlockEntityMetrics implements Metric {
 	private static final AttributeKey<Long> CHUNK_POS_X = AttributeKey.longKey("chunk.pos.x");
 	private static final AttributeKey<Long> CHUNK_POS_Z = AttributeKey.longKey("chunk.pos.z");
 
-	private final AtomicReference<LongCounter> blockEntityCounter = new AtomicReference<>();
+	private final AtomicReference<LongGauge> blockEntityGauge = new AtomicReference<>();
 	private final AtomicReference<BlockEntityCalculator> blockEntityCalculator = new AtomicReference<>();
 
 	@Override
@@ -45,10 +45,11 @@ public class BlockEntityMetrics implements Metric {
 	public void register(MetricEvent.RegisterMetricEvent event) {
 		Metric.super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.WORLD);
-		blockEntityCounter.set(
-				meter.counterBuilder(METRIC_NAME)
+		blockEntityGauge.set(
+				meter.gaugeBuilder(METRIC_NAME)
 						.setDescription(DESCRIPTION)
 						.setUnit(UNIT)
+						.ofLongs()
 						.build()
 		);
 	}
@@ -57,7 +58,7 @@ public class BlockEntityMetrics implements Metric {
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
 		Metric.super.unregister(event);
-		blockEntityCounter.set(null);
+		blockEntityGauge.set(null);
 	}
 
 	@SubscribeEvent
@@ -77,13 +78,13 @@ public class BlockEntityMetrics implements Metric {
 
 	@Override
 	public void write() {
-		LongCounter counter = blockEntityCounter.get();
+		LongGauge gauge = blockEntityGauge.get();
 		BlockEntityCalculator calculator = blockEntityCalculator.get();
-		if (counter == null || calculator == null) {
+		if (gauge == null || calculator == null) {
 			return;
 		}
 
-		calculator.calculateAndWrite(counter);
+		calculator.calculateAndWrite(gauge);
 	}
 
 	private static class BlockEntityCalculator {
@@ -94,7 +95,7 @@ public class BlockEntityMetrics implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(LongCounter counter) {
+		void calculateAndWrite(LongGauge gauge) {
 			if (server == null) {
 				return;
 			}
@@ -128,7 +129,7 @@ public class BlockEntityMetrics implements Metric {
 							.put(CHUNK_POS_X, (long) x)
 							.put(CHUNK_POS_Z, (long) z);
 
-					counter.add(entry.getValue().value, builder.build());
+					gauge.set(entry.getValue().value, builder.build());
 				}
 			}
 		}
