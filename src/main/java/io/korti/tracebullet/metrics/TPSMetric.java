@@ -7,6 +7,7 @@ import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.DoubleGauge;
+import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.Meter;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +17,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -24,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * <p>Instruments (scope {@code minecraft.server}):
  * <ul>
  *   <li>{@code minecraft.server.tps} — ticks per second gauge per dimension</li>
- *   <li>{@code minecraft.server.tick_time} — mean tick duration in ms per dimension</li>
+ *   <li>{@code minecraft.server.tick_time} — tick duration histogram in ms per dimension</li>
  * </ul>
  * Attributes: {@code server.name}, {@code dimension.name}.
  */
@@ -35,14 +37,16 @@ public class TPSMetric extends BaseMetric {
 	private static final String TPS_UNIT = "tps";
 
 	private static final String TICK_TIME_METRIC_NAME = "minecraft.server.tick_time";
-	private static final String TICK_TIME_DESCRIPTION = "Mean tick time per dimension.";
+	private static final String TICK_TIME_DESCRIPTION = "Tick time distribution per dimension.";
 	private static final String TICK_TIME_UNIT = "ms";
+
+	private static final List<Double> TICK_TIME_BUCKETS = List.of(5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 75.0, 100.0, 150.0, 200.0, 300.0, 500.0);
 
 	private static final AttributeKey<String> SERVER_NAME = AttributeKey.stringKey("server.name");
 	private static final AttributeKey<String> DIMENSION_NAME = AttributeKey.stringKey("dimension.name");
 
 	private final AtomicReference<DoubleGauge> tpsGauge = new AtomicReference<>();
-	private final AtomicReference<DoubleGauge> tickTimeGauge = new AtomicReference<>();
+	private final AtomicReference<DoubleHistogram> tickTimeHistogram = new AtomicReference<>();
 	private final AtomicReference<TPSCalculator> tpsCalculator = new AtomicReference<>();
 
 	@Override
@@ -52,7 +56,11 @@ public class TPSMetric extends BaseMetric {
 
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.SERVER);
 		tpsGauge.set(meter.gaugeBuilder(TPS_METRIC_NAME).setDescription(TPS_DESCRIPTION).setUnit(TPS_UNIT).build());
-		tickTimeGauge.set(meter.gaugeBuilder(TICK_TIME_METRIC_NAME).setDescription(TICK_TIME_DESCRIPTION).setUnit(TICK_TIME_UNIT).build());
+		tickTimeHistogram.set(meter.histogramBuilder(TICK_TIME_METRIC_NAME)
+				.setDescription(TICK_TIME_DESCRIPTION)
+				.setUnit(TICK_TIME_UNIT)
+				.setExplicitBucketBoundariesAdvice(TICK_TIME_BUCKETS)
+				.build());
 	}
 
 	@Override
@@ -60,7 +68,7 @@ public class TPSMetric extends BaseMetric {
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
 		super.unregister(event);
 		tpsGauge.set(null);
-		tickTimeGauge.set(null);
+		tickTimeHistogram.set(null);
 	}
 
 	@SubscribeEvent
@@ -76,7 +84,7 @@ public class TPSMetric extends BaseMetric {
 	@Override
 	public void write() {
 		DoubleGauge tps = tpsGauge.get();
-		DoubleGauge tickTime = tickTimeGauge.get();
+		DoubleHistogram tickTime = tickTimeHistogram.get();
 		TPSCalculator calculator = tpsCalculator.get();
 		if (tps == null || tickTime == null || calculator == null) {
 			return;
@@ -95,7 +103,7 @@ public class TPSMetric extends BaseMetric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(DoubleGauge tpsGauge, DoubleGauge tickTimeGauge, Attributes customAttributes) {
+		void calculateAndWrite(DoubleGauge tpsGauge, DoubleHistogram tickTimeHistogram, Attributes customAttributes) {
 			if (server == null) {
 				return;
 			}
@@ -106,24 +114,24 @@ public class TPSMetric extends BaseMetric {
 				String levelName = level.dimension().identifier().toString();
 				Attributes attributes = Attributes.builder().putAll(customAttributes).put(SERVER_NAME, serverName).put(DIMENSION_NAME, levelName).build();
 
-				double tickTimeMs = calculateTickTimeMs(server, level);
+				long[] rawTimes = getRawTickTimes(server, level);
+				double meanTickTimeMs = Stats.meanOf(rawTimes) / TimeUtil.NANOSECONDS_PER_MILLISECOND;
 				TickRateManager tickRateManager = level == null ? server.tickRateManager() : level.tickRateManager();
-				double tps = TimeUtil.MILLISECONDS_PER_SECOND / Math.max(tickTimeMs, tickRateManager.millisecondsPerTick());
+				double tps = TimeUtil.MILLISECONDS_PER_SECOND / Math.max(meanTickTimeMs, tickRateManager.millisecondsPerTick());
 
 				tpsGauge.set(tps, attributes);
-				tickTimeGauge.set(tickTimeMs, attributes);
+				for (long timeNs : rawTimes) {
+					tickTimeHistogram.record(timeNs / (double) TimeUtil.NANOSECONDS_PER_MILLISECOND, attributes);
+				}
 			}
 		}
 
-		private double calculateTickTimeMs(MinecraftServer server, ServerLevel level) {
-			long[] times;
+		private long[] getRawTickTimes(MinecraftServer server, ServerLevel level) {
 			if (level == null) {
-				times = server.getTickTimesNanos();
-			} else {
-				var dimensionTimes = server.getTickTime(level.dimension());
-				times = dimensionTimes == null ? UNLOADED : dimensionTimes;
+				return server.getTickTimesNanos();
 			}
-			return Stats.meanOf(times) / TimeUtil.NANOSECONDS_PER_MILLISECOND;
+			var dimensionTimes = server.getTickTime(level.dimension());
+			return dimensionTimes == null ? UNLOADED : dimensionTimes;
 		}
 	}
 
