@@ -18,6 +18,19 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Reports chunk statistics per dimension: current loaded/force-loaded counts (gauges written every
+ * minute) and cumulative load/unload event counts (counters incremented on each chunk event).
+ *
+ * <p>Instruments (scope {@code minecraft.world}):
+ * <ul>
+ *   <li>{@code minecraft.server.world.chunks.loaded} — currently loaded chunk count gauge</li>
+ *   <li>{@code minecraft.server.world.chunks.force_loaded} — currently force-loaded chunk count gauge</li>
+ *   <li>{@code minecraft.server.world.chunk.load} — cumulative chunk load event counter</li>
+ *   <li>{@code minecraft.server.world.chunk.unload} — cumulative chunk unload event counter</li>
+ * </ul>
+ * Attributes: {@code server.name}, {@code dimension.name}.
+ */
 public class WorldChunkMetrics extends BaseMetric {
 
 	private static final int WRITING_PERIOD_MINUTE = 1;

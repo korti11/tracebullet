@@ -14,6 +14,15 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Reports the number of players currently connected to the server.
+ *
+ * <p>Instruments (scope {@code minecraft.server}):
+ * <ul>
+ *   <li>{@code minecraft.server.player.count} — player count gauge, written every minute</li>
+ * </ul>
+ * Attributes: {@code server.name}.
+ */
 public class PlayerCountMetric extends BaseMetric {
 
 	private static final int WRITING_PERIOD_MINUTE = 1;

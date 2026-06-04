@@ -14,6 +14,15 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Reports connected players grouped into latency buckets (0–49 ms, 50–149 ms, 150–299 ms, 300+ ms).
+ *
+ * <p>Instruments (scope {@code minecraft.server}):
+ * <ul>
+ *   <li>{@code minecraft.server.player.latency} — player count per latency bucket gauge</li>
+ * </ul>
+ * Attributes: {@code server.name}, {@code latency.range}.
+ */
 public class PlayerLatencyMetric extends BaseMetric {
 
 	private static final String METRIC_NAME = "minecraft.server.player.latency";

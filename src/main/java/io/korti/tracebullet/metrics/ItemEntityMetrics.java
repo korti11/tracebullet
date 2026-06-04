@@ -24,6 +24,16 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Reports dropped item entity counts per chunk, broken down by dimension and item type.
+ *
+ * <p>Instruments (scope {@code minecraft.world}):
+ * <ul>
+ *   <li>{@code minecraft.server.world.entity.item} — item entity count gauge, written every minute</li>
+ * </ul>
+ * Attributes: {@code server.name}, {@code dimension.name}, {@code item.type},
+ * {@code chunk.pos.x}, {@code chunk.pos.z}.
+ */
 public class ItemEntityMetrics extends BaseMetric {
 
 	private static final int WRITING_PERIOD_MINUTE = 1;

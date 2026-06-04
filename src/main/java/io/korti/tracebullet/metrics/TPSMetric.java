@@ -18,6 +18,16 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Reports server TPS and mean tick time, broken down per dimension.
+ *
+ * <p>Instruments (scope {@code minecraft.server}):
+ * <ul>
+ *   <li>{@code minecraft.server.tps} — ticks per second gauge per dimension</li>
+ *   <li>{@code minecraft.server.tick_time} — mean tick duration in ms per dimension</li>
+ * </ul>
+ * Attributes: {@code server.name}, {@code dimension.name}.
+ */
 public class TPSMetric extends BaseMetric {
 
 	private static final String TPS_METRIC_NAME = "minecraft.server.tps";

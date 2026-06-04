@@ -24,6 +24,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+/**
+ * Reports living entity counts per chunk, broken down by dimension and entity type.
+ *
+ * <p>Instruments (scope {@code minecraft.world}):
+ * <ul>
+ *   <li>{@code minecraft.server.world.entity.living} — living entity count gauge, written every minute</li>
+ * </ul>
+ * Attributes: {@code server.name}, {@code dimension.name}, {@code entity.type},
+ * {@code chunk.pos.x}, {@code chunk.pos.z}.
+ */
 public class EntityMetrics extends BaseMetric {
 	private static final int WRITING_PERIOD_MINUTE = 1;
 

@@ -22,6 +22,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Reports JVM health metrics for the server process.
+ *
+ * <p>Instruments (scope {@code minecraft.server}):
+ * <ul>
+ *   <li>{@code minecraft.server.jvm.memory.heap.used/committed/max} — heap memory gauges in bytes</li>
+ *   <li>{@code minecraft.server.jvm.gc.collections} — GC collection count delta since last write, per GC pool</li>
+ *   <li>{@code minecraft.server.jvm.gc.pause_time} — cumulative GC pause time delta since last write in ms, per GC pool</li>
+ *   <li>{@code minecraft.server.jvm.cpu.load} — JVM process CPU load [0.0, 1.0]</li>
+ *   <li>{@code minecraft.server.jvm.thread.count} — live JVM thread count</li>
+ * </ul>
+ * Attributes: {@code server.name}; GC instruments additionally carry {@code gc.name}.
+ * GC counters report deltas since the previous write, not cumulative totals.
+ */
 public class JvmMetrics extends BaseMetric {
 
 	private static final String HEAP_USED_METRIC_NAME = "minecraft.server.jvm.memory.heap.used";
