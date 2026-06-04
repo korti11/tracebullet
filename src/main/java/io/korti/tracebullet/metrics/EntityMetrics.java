@@ -1,7 +1,7 @@
 package io.korti.tracebullet.metrics;
 
 import io.korti.tracebullet.api.InstrumentationScopeNames;
-import io.korti.tracebullet.api.metrics.Metric;
+import io.korti.tracebullet.api.metrics.BaseMetric;
 import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-public class EntityMetrics implements Metric {
+public class EntityMetrics extends BaseMetric {
 	private static final int WRITING_PERIOD_MINUTE = 1;
 
 	private static final String ENTITY_LIVING_METRIC_NAME = "minecraft.server.world.entity.living";
@@ -44,7 +44,7 @@ public class EntityMetrics implements Metric {
 	@Override
 	@SubscribeEvent
 	public void register(MetricEvent.RegisterMetricEvent event) {
-		Metric.super.register(event);
+		super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.WORLD);
 		livingEntityGauge.set(
 				meter.gaugeBuilder(ENTITY_LIVING_METRIC_NAME)
@@ -58,7 +58,7 @@ public class EntityMetrics implements Metric {
 	@Override
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
-		Metric.super.unregister(event);
+		super.unregister(event);
 		livingEntityGauge.set(null);
 	}
 
@@ -85,7 +85,7 @@ public class EntityMetrics implements Metric {
 			return;
 		}
 
-		calculator.calculateAndWrite(livingEntities);
+		calculator.calculateAndWrite(livingEntities, attributesBuilder().build());
 	}
 
 	private static class EntityCalculator {
@@ -96,7 +96,7 @@ public class EntityMetrics implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(LongGauge livingEntities) {
+		void calculateAndWrite(LongGauge livingEntities, Attributes customAttributes) {
 			if (server == null) {
 				return;
 			}
@@ -106,7 +106,7 @@ public class EntityMetrics implements Metric {
 			for (ServerLevel level : levels) {
 				String levelName = level.dimension().identifier().toString();
 
-				Attributes attributes = Attributes.of(SERVER_NAME, serverName, DIMENSION_NAME, levelName);
+				Attributes attributes = Attributes.builder().putAll(customAttributes).put(SERVER_NAME, serverName).put(DIMENSION_NAME, levelName).build();
 				Map<EntityKey, Long> entities = level.getEntities(EntityTypeTest.forClass(LivingEntity.class), (mob) -> true)
 						.stream().collect(Collectors.groupingBy(EntityCalculator::createKey, Collectors.counting()));
 

@@ -1,7 +1,7 @@
 package io.korti.tracebullet.metrics;
 
 import io.korti.tracebullet.api.InstrumentationScopeNames;
-import io.korti.tracebullet.api.metrics.Metric;
+import io.korti.tracebullet.api.metrics.BaseMetric;
 import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class JvmMetrics implements Metric {
+public class JvmMetrics extends BaseMetric {
 
 	private static final String HEAP_USED_METRIC_NAME = "minecraft.server.jvm.memory.heap.used";
 	private static final String HEAP_USED_DESCRIPTION = "JVM heap memory currently used.";
@@ -70,7 +70,7 @@ public class JvmMetrics implements Metric {
 	@Override
 	@SubscribeEvent
 	public void register(MetricEvent.RegisterMetricEvent event) {
-		Metric.super.register(event);
+		super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.SERVER);
 		heapUsedGauge.set(meter.gaugeBuilder(HEAP_USED_METRIC_NAME)
 				.ofLongs().setDescription(HEAP_USED_DESCRIPTION).setUnit(HEAP_UNIT).build());
@@ -91,7 +91,7 @@ public class JvmMetrics implements Metric {
 	@Override
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
-		Metric.super.unregister(event);
+		super.unregister(event);
 		heapUsedGauge.set(null);
 		heapCommittedGauge.set(null);
 		heapMaxGauge.set(null);
@@ -122,7 +122,7 @@ public class JvmMetrics implements Metric {
 			return;
 		}
 
-		Attributes serverAttrs = Attributes.of(SERVER_NAME, server.getWorldData().getLevelName());
+		Attributes serverAttrs = attributesBuilder().put(SERVER_NAME, server.getWorldData().getLevelName()).build();
 		writeMemory(serverAttrs);
 		writeGc(serverAttrs);
 		writeCpuAndThreads(serverAttrs);
@@ -164,7 +164,7 @@ public class JvmMetrics implements Metric {
 			prev.time = currentTime;
 
 			if (deltaCount > 0) {
-				Attributes gcAttrs = Attributes.of(SERVER_NAME, serverAttrs.get(SERVER_NAME), GC_NAME_KEY, name);
+				Attributes gcAttrs = Attributes.builder().putAll(serverAttrs).put(GC_NAME_KEY, name).build();
 				gcCollections.add(deltaCount, gcAttrs);
 				gcPauseTime.add(deltaTime, gcAttrs);
 			}

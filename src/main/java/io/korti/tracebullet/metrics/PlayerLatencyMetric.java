@@ -1,10 +1,9 @@
 package io.korti.tracebullet.metrics;
 
 import io.korti.tracebullet.api.InstrumentationScopeNames;
-import io.korti.tracebullet.api.metrics.Metric;
+import io.korti.tracebullet.api.metrics.BaseMetric;
 import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.Meter;
 import net.minecraft.server.MinecraftServer;
@@ -15,7 +14,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class PlayerLatencyMetric implements Metric {
+public class PlayerLatencyMetric extends BaseMetric {
 
 	private static final String METRIC_NAME = "minecraft.server.player.latency";
 	private static final String DESCRIPTION = "Number of players grouped by connection latency range.";
@@ -33,7 +32,7 @@ public class PlayerLatencyMetric implements Metric {
 	@Override
 	@SubscribeEvent
 	public void register(MetricEvent.RegisterMetricEvent event) {
-		Metric.super.register(event);
+		super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.SERVER);
 		latencyGauge.set(meter.gaugeBuilder(METRIC_NAME)
 				.ofLongs().setDescription(DESCRIPTION).setUnit(UNIT).build());
@@ -42,7 +41,7 @@ public class PlayerLatencyMetric implements Metric {
 	@Override
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
-		Metric.super.unregister(event);
+		super.unregister(event);
 		latencyGauge.set(null);
 	}
 
@@ -80,7 +79,7 @@ public class PlayerLatencyMetric implements Metric {
 		}
 
 		for (int i = 0; i < BUCKET_LABELS.length; i++) {
-			gauge.set(buckets[i], Attributes.of(SERVER_NAME, serverName, LATENCY_RANGE, BUCKET_LABELS[i]));
+			gauge.set(buckets[i], attributesBuilder().put(SERVER_NAME, serverName).put(LATENCY_RANGE, BUCKET_LABELS[i]).build());
 		}
 	}
 }

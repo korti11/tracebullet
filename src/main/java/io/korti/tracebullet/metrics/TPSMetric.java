@@ -2,7 +2,7 @@ package io.korti.tracebullet.metrics;
 
 import com.google.common.math.Stats;
 import io.korti.tracebullet.api.InstrumentationScopeNames;
-import io.korti.tracebullet.api.metrics.Metric;
+import io.korti.tracebullet.api.metrics.BaseMetric;
 import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class TPSMetric implements Metric {
+public class TPSMetric extends BaseMetric {
 
 	private static final String TPS_METRIC_NAME = "minecraft.server.tps";
 	private static final String TPS_DESCRIPTION = "TPS of Minecraft Server.";
@@ -38,7 +38,7 @@ public class TPSMetric implements Metric {
 	@Override
 	@SubscribeEvent
 	public void register(MetricEvent.RegisterMetricEvent event) {
-		Metric.super.register(event);
+		super.register(event);
 
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.SERVER);
 		tpsGauge.set(meter.gaugeBuilder(TPS_METRIC_NAME).setDescription(TPS_DESCRIPTION).setUnit(TPS_UNIT).build());
@@ -48,7 +48,7 @@ public class TPSMetric implements Metric {
 	@Override
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
-		Metric.super.unregister(event);
+		super.unregister(event);
 		tpsGauge.set(null);
 		tickTimeGauge.set(null);
 	}
@@ -72,7 +72,7 @@ public class TPSMetric implements Metric {
 			return;
 		}
 
-		calculator.calculateAndWrite(tps, tickTime);
+		calculator.calculateAndWrite(tps, tickTime, attributesBuilder().build());
 	}
 
 	private static class TPSCalculator {
@@ -85,7 +85,7 @@ public class TPSMetric implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(DoubleGauge tpsGauge, DoubleGauge tickTimeGauge) {
+		void calculateAndWrite(DoubleGauge tpsGauge, DoubleGauge tickTimeGauge, Attributes customAttributes) {
 			if (server == null) {
 				return;
 			}
@@ -94,7 +94,7 @@ public class TPSMetric implements Metric {
 			Iterable<ServerLevel> levels = server.getAllLevels();
 			for (ServerLevel level : levels) {
 				String levelName = level.dimension().identifier().toString();
-				Attributes attributes = Attributes.of(SERVER_NAME, serverName, DIMENSION_NAME, levelName);
+				Attributes attributes = Attributes.builder().putAll(customAttributes).put(SERVER_NAME, serverName).put(DIMENSION_NAME, levelName).build();
 
 				double tickTimeMs = calculateTickTimeMs(server, level);
 				TickRateManager tickRateManager = level == null ? server.tickRateManager() : level.tickRateManager();

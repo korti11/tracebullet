@@ -1,7 +1,7 @@
 package io.korti.tracebullet.metrics;
 
 import io.korti.tracebullet.api.InstrumentationScopeNames;
-import io.korti.tracebullet.api.metrics.Metric;
+import io.korti.tracebullet.api.metrics.BaseMetric;
 import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -18,7 +18,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class WorldChunkMetrics implements Metric {
+public class WorldChunkMetrics extends BaseMetric {
 
 	private static final int WRITING_PERIOD_MINUTE = 1;
 
@@ -49,7 +49,7 @@ public class WorldChunkMetrics implements Metric {
 	@Override
 	@SubscribeEvent
 	public void register(MetricEvent.RegisterMetricEvent event) {
-		Metric.super.register(event);
+		super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.WORLD);
 		loadedChunksGauge.set(
 				meter.gaugeBuilder(LOADED_CHUNKS_METRIC_NAME)
@@ -82,7 +82,7 @@ public class WorldChunkMetrics implements Metric {
 	@Override
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
-		Metric.super.unregister(event);
+		super.unregister(event);
 		loadedChunksGauge.set(null);
 		forceLoadedChunksGauge.set(null);
 		chunkLoadCounter.set(null);
@@ -109,10 +109,10 @@ public class WorldChunkMetrics implements Metric {
 			return;
 		}
 
-		Attributes attributes = Attributes.of(
-				SERVER_NAME, level.getServer().getWorldData().getLevelName(),
-				DIMENSION_NAME, level.dimension().identifier().toString()
-		);
+		Attributes attributes = attributesBuilder()
+				.put(SERVER_NAME, level.getServer().getWorldData().getLevelName())
+				.put(DIMENSION_NAME, level.dimension().identifier().toString())
+				.build();
 		counter.add(1, attributes);
 	}
 
@@ -126,10 +126,10 @@ public class WorldChunkMetrics implements Metric {
 			return;
 		}
 
-		Attributes attributes = Attributes.of(
-				SERVER_NAME, level.getServer().getWorldData().getLevelName(),
-				DIMENSION_NAME, level.dimension().identifier().toString()
-		);
+		Attributes attributes = attributesBuilder()
+				.put(SERVER_NAME, level.getServer().getWorldData().getLevelName())
+				.put(DIMENSION_NAME, level.dimension().identifier().toString())
+				.build();
 		counter.add(1, attributes);
 	}
 
@@ -147,7 +147,7 @@ public class WorldChunkMetrics implements Metric {
 			return;
 		}
 
-		calculator.calculateAndWrite(loadedChunks, forceLoadedChunks);
+		calculator.calculateAndWrite(loadedChunks, forceLoadedChunks, attributesBuilder().build());
 	}
 
 	private static class WorldChunkCalculator {
@@ -158,7 +158,7 @@ public class WorldChunkMetrics implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(LongGauge loadedChunks, LongGauge forceLoadedChunks) {
+		void calculateAndWrite(LongGauge loadedChunks, LongGauge forceLoadedChunks, Attributes customAttributes) {
 			if (server == null) {
 				return;
 			}
@@ -168,7 +168,7 @@ public class WorldChunkMetrics implements Metric {
 			for (ServerLevel level : levels) {
 				String levelName = level.dimension().identifier().toString();
 
-				Attributes attributes = Attributes.of(SERVER_NAME, serverName, DIMENSION_NAME, levelName);
+				Attributes attributes = Attributes.builder().putAll(customAttributes).put(SERVER_NAME, serverName).put(DIMENSION_NAME, levelName).build();
 				loadedChunks.set(level.getChunkSource().getLoadedChunksCount(), attributes);
 				forceLoadedChunks.set(level.getChunkSource().getForceLoadedChunks().size(), attributes);
 			}

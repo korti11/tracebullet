@@ -1,7 +1,7 @@
 package io.korti.tracebullet.metrics;
 
 import io.korti.tracebullet.api.InstrumentationScopeNames;
-import io.korti.tracebullet.api.metrics.Metric;
+import io.korti.tracebullet.api.metrics.BaseMetric;
 import io.korti.tracebullet.api.metrics.MetricEvent;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class BlockEntityMetrics implements Metric {
+public class BlockEntityMetrics extends BaseMetric {
 
 	private static final int WRITING_PERIOD_MINUTE = 1;
 
@@ -43,7 +43,7 @@ public class BlockEntityMetrics implements Metric {
 	@Override
 	@SubscribeEvent
 	public void register(MetricEvent.RegisterMetricEvent event) {
-		Metric.super.register(event);
+		super.register(event);
 		Meter meter = event.getMeterProvider().get(InstrumentationScopeNames.WORLD);
 		blockEntityGauge.set(
 				meter.gaugeBuilder(METRIC_NAME)
@@ -57,7 +57,7 @@ public class BlockEntityMetrics implements Metric {
 	@Override
 	@SubscribeEvent
 	public void unregister(MetricEvent.UnregisterMetricEvent event) {
-		Metric.super.unregister(event);
+		super.unregister(event);
 		blockEntityGauge.set(null);
 	}
 
@@ -84,7 +84,7 @@ public class BlockEntityMetrics implements Metric {
 			return;
 		}
 
-		calculator.calculateAndWrite(gauge);
+		calculator.calculateAndWrite(gauge, attributesBuilder().build());
 	}
 
 	private static class BlockEntityCalculator {
@@ -95,7 +95,7 @@ public class BlockEntityMetrics implements Metric {
 			this.server = server;
 		}
 
-		void calculateAndWrite(LongGauge gauge) {
+		void calculateAndWrite(LongGauge gauge, Attributes customAttributes) {
 			if (server == null) {
 				return;
 			}
@@ -103,7 +103,7 @@ public class BlockEntityMetrics implements Metric {
 			String serverName = server.getWorldData().getLevelName();
 			for (ServerLevel level : server.getAllLevels()) {
 				String levelName = level.dimension().identifier().toString();
-				Attributes baseAttributes = Attributes.of(SERVER_NAME, serverName, DIMENSION_NAME, levelName);
+				Attributes baseAttributes = Attributes.builder().putAll(customAttributes).put(SERVER_NAME, serverName).put(DIMENSION_NAME, levelName).build();
 
 				Map<BlockEntityKey, Counter> counts = new HashMap<>();
 				level.getChunkSource().chunkMap.forEachReadyToSendChunk(chunk -> {
