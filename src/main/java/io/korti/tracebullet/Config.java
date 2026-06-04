@@ -35,6 +35,30 @@ public class Config {
 			.defineInRange("threading.schedule_thread_pool_size", Config::calculateDefaultThreadPoolSize, 1, 32);
 	//</editor-fold>
 
+	//<editor-fold desc="Metrics Section">
+	public static final ModConfigSpec.BooleanValue METRICS_TPS_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the TPS and tick time metrics.")
+			.define("metrics.tps", true);
+	public static final ModConfigSpec.BooleanValue METRICS_PLAYER_ENABLED = BUILDER.gameRestart()
+			.comment("Enable all player metrics (player count, latency).")
+			.define("metrics.player", true);
+	public static final ModConfigSpec.BooleanValue METRICS_WORLD_CHUNK_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the world chunk count metrics.")
+			.define("metrics.world_chunk", true);
+	public static final ModConfigSpec.BooleanValue METRICS_ENTITY_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the entity count metrics.")
+			.define("metrics.entity", true);
+	public static final ModConfigSpec.BooleanValue METRICS_JVM_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the JVM metrics.")
+			.define("metrics.jvm", true);
+	public static final ModConfigSpec.BooleanValue METRICS_BLOCK_ENTITY_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the block entity count metrics.")
+			.define("metrics.block_entity", true);
+	public static final ModConfigSpec.BooleanValue METRICS_ITEM_ENTITY_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the item entity count metrics.")
+			.define("metrics.item_entity", true);
+	//</editor-fold>
+
 	static final ModConfigSpec SPEC = BUILDER.build();
 
 	@SuppressWarnings("ResultOfMethodCallIgnored")

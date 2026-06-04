@@ -16,6 +16,10 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import java.util.function.Supplier;
+
+import net.neoforged.neoforge.common.ModConfigSpec;
+
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -61,15 +65,19 @@ public class TraceBullet {
 		registerMetrics();
 	}
 
+	private void registerMetricIf(ModConfigSpec.BooleanValue flag, Supplier<Object> factory) {
+		if (flag.get()) NeoForge.EVENT_BUS.register(factory.get());
+	}
+
 	private void registerMetrics() {
-		NeoForge.EVENT_BUS.register(new TPSMetric());
-		NeoForge.EVENT_BUS.register(new PlayerCountMetric());
-		NeoForge.EVENT_BUS.register(new WorldChunkMetrics());
-		NeoForge.EVENT_BUS.register(new EntityMetrics());
-		NeoForge.EVENT_BUS.register(new JvmMetrics());
-		NeoForge.EVENT_BUS.register(new BlockEntityMetrics());
-		NeoForge.EVENT_BUS.register(new ItemEntityMetrics());
-		NeoForge.EVENT_BUS.register(new PlayerLatencyMetric());
+		registerMetricIf(Config.METRICS_TPS_ENABLED, TPSMetric::new);
+		registerMetricIf(Config.METRICS_PLAYER_ENABLED, PlayerCountMetric::new);
+		registerMetricIf(Config.METRICS_WORLD_CHUNK_ENABLED, WorldChunkMetrics::new);
+		registerMetricIf(Config.METRICS_ENTITY_ENABLED, EntityMetrics::new);
+		registerMetricIf(Config.METRICS_JVM_ENABLED, JvmMetrics::new);
+		registerMetricIf(Config.METRICS_BLOCK_ENTITY_ENABLED, BlockEntityMetrics::new);
+		registerMetricIf(Config.METRICS_ITEM_ENTITY_ENABLED, ItemEntityMetrics::new);
+		registerMetricIf(Config.METRICS_PLAYER_ENABLED, PlayerLatencyMetric::new);
 	}
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
