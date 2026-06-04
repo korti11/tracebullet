@@ -118,7 +118,7 @@ public class ItemEntityMetrics implements Metric {
 
 				for (Map.Entry<ItemEntityKey, Counter> entry : counts.entrySet()) {
 					ItemEntityKey key = entry.getKey();
-					long chunkLong = key.chunkPos().toLong();
+					long chunkLong = key.chunkPos().pack();
 					int x = ChunkPos.getX(chunkLong);
 					int z = ChunkPos.getZ(chunkLong);
 

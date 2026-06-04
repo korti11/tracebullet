@@ -113,7 +113,7 @@ public class EntityMetrics implements Metric {
 				for (Map.Entry<EntityKey, Long> entry : entities.entrySet()) {
 					EntityKey key = entry.getKey();
 
-					long chunk = key.chunkPos().toLong();
+					long chunk = key.chunkPos().pack();
 					int x = ChunkPos.getX(chunk);
 					int z = ChunkPos.getZ(chunk);
 

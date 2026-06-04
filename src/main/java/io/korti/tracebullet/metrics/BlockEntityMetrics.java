@@ -8,12 +8,12 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.metrics.LongGauge;
 import io.opentelemetry.api.metrics.Meter;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
@@ -109,7 +109,7 @@ public class BlockEntityMetrics implements Metric {
 				level.getChunkSource().chunkMap.forEachReadyToSendChunk(chunk -> {
 					ChunkPos chunkPos = chunk.getPos();
 					for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
-						Identifier typeKey = BlockEntityType.getKey(blockEntity.getType());
+						Identifier typeKey = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType());
 						if (typeKey == null) {
 							continue;
 						}
@@ -119,7 +119,7 @@ public class BlockEntityMetrics implements Metric {
 
 				for (Map.Entry<BlockEntityKey, Counter> entry : counts.entrySet()) {
 					BlockEntityKey key = entry.getKey();
-					long chunkLong = key.chunkPos().toLong();
+					long chunkLong = key.chunkPos().pack();
 					int x = ChunkPos.getX(chunkLong);
 					int z = ChunkPos.getZ(chunkLong);
 
