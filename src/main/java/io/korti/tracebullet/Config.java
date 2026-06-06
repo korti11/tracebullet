@@ -60,6 +60,9 @@ public class Config {
 	public static final ModConfigSpec.BooleanValue METRICS_WORLD_SAVE_ENABLED = BUILDER.gameRestart()
 			.comment("Enable the world save duration metric.")
 			.define("metrics.world_save", true);
+	public static final ModConfigSpec.BooleanValue METRICS_SCHEDULED_TICK_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the scheduled tick queue size metrics.")
+			.define("metrics.scheduled_tick", true);
 	//</editor-fold>
 
 	static final ModConfigSpec SPEC = BUILDER.build();

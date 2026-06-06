@@ -1,6 +1,7 @@
 package io.korti.tracebullet;
 
 import io.korti.tracebullet.metrics.BlockEntityMetrics;
+import io.korti.tracebullet.metrics.ScheduledTickMetric;
 import io.korti.tracebullet.metrics.WorldSaveMetric;
 import io.korti.tracebullet.metrics.EntityMetrics;
 import io.korti.tracebullet.metrics.ItemEntityMetrics;
@@ -67,7 +68,9 @@ public class TraceBullet {
 	}
 
 	private void registerMetricIf(ModConfigSpec.BooleanValue flag, Supplier<Object> factory) {
-		if (flag.get()) NeoForge.EVENT_BUS.register(factory.get());
+		if (flag.get()) {
+			NeoForge.EVENT_BUS.register(factory.get());
+		}
 	}
 
 	private void registerMetrics() {
@@ -80,6 +83,7 @@ public class TraceBullet {
 		registerMetricIf(Config.METRICS_ITEM_ENTITY_ENABLED, ItemEntityMetrics::new);
 		registerMetricIf(Config.METRICS_PLAYER_ENABLED, PlayerLatencyMetric::new);
 		registerMetricIf(Config.METRICS_WORLD_SAVE_ENABLED, WorldSaveMetric::new);
+		registerMetricIf(Config.METRICS_SCHEDULED_TICK_ENABLED, ScheduledTickMetric::new);
 	}
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
