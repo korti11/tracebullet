@@ -63,6 +63,9 @@ public class Config {
 	public static final ModConfigSpec.BooleanValue METRICS_SCHEDULED_TICK_ENABLED = BUILDER.gameRestart()
 			.comment("Enable the scheduled tick queue size metrics.")
 			.define("metrics.scheduled_tick", true);
+	public static final ModConfigSpec.BooleanValue METRICS_CHUNK_GENERATION_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the chunk generation counter metric.")
+			.define("metrics.chunk_generation", true);
 	//</editor-fold>
 
 	static final ModConfigSpec SPEC = BUILDER.build();

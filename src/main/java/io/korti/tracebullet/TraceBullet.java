@@ -1,35 +1,23 @@
 package io.korti.tracebullet;
 
-import io.korti.tracebullet.metrics.BlockEntityMetrics;
-import io.korti.tracebullet.metrics.ScheduledTickMetric;
-import io.korti.tracebullet.metrics.WorldSaveMetric;
-import io.korti.tracebullet.metrics.EntityMetrics;
-import io.korti.tracebullet.metrics.ItemEntityMetrics;
-import io.korti.tracebullet.metrics.PlayerLatencyMetric;
-import io.korti.tracebullet.metrics.JvmMetrics;
-import io.korti.tracebullet.metrics.PlayerCountMetric;
-import io.korti.tracebullet.metrics.TPSMetric;
-import io.korti.tracebullet.metrics.WorldChunkMetrics;
+import com.mojang.logging.LogUtils;
+import io.korti.tracebullet.metrics.*;
 import io.korti.tracebullet.otel.OpenTelemetryMetricRegistry;
 import io.korti.tracebullet.otel.OpenTelemetrySetupHandler;
 import io.korti.tracebullet.threading.ThreadPool;
 import io.korti.tracebullet.threading.ThreadPoolManager;
-import org.slf4j.Logger;
-
-import com.mojang.logging.LogUtils;
-
-import java.util.function.Supplier;
-
-import net.neoforged.neoforge.common.ModConfigSpec;
-
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import org.slf4j.Logger;
+
+import java.util.function.Supplier;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(TraceBullet.MODID)
@@ -84,6 +72,7 @@ public class TraceBullet {
 		registerMetricIf(Config.METRICS_PLAYER_ENABLED, PlayerLatencyMetric::new);
 		registerMetricIf(Config.METRICS_WORLD_SAVE_ENABLED, WorldSaveMetric::new);
 		registerMetricIf(Config.METRICS_SCHEDULED_TICK_ENABLED, ScheduledTickMetric::new);
+		registerMetricIf(Config.METRICS_CHUNK_GENERATION_ENABLED, ChunkGenerationMetric::new);
 	}
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
