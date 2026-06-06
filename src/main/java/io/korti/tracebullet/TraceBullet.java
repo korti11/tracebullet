@@ -1,6 +1,7 @@
 package io.korti.tracebullet;
 
 import io.korti.tracebullet.metrics.BlockEntityMetrics;
+import io.korti.tracebullet.metrics.WorldSaveMetric;
 import io.korti.tracebullet.metrics.EntityMetrics;
 import io.korti.tracebullet.metrics.ItemEntityMetrics;
 import io.korti.tracebullet.metrics.PlayerLatencyMetric;
@@ -78,6 +79,7 @@ public class TraceBullet {
 		registerMetricIf(Config.METRICS_BLOCK_ENTITY_ENABLED, BlockEntityMetrics::new);
 		registerMetricIf(Config.METRICS_ITEM_ENTITY_ENABLED, ItemEntityMetrics::new);
 		registerMetricIf(Config.METRICS_PLAYER_ENABLED, PlayerLatencyMetric::new);
+		registerMetricIf(Config.METRICS_WORLD_SAVE_ENABLED, WorldSaveMetric::new);
 	}
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call

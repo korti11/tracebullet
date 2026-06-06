@@ -57,6 +57,9 @@ public class Config {
 	public static final ModConfigSpec.BooleanValue METRICS_ITEM_ENTITY_ENABLED = BUILDER.gameRestart()
 			.comment("Enable the item entity count metrics.")
 			.define("metrics.item_entity", true);
+	public static final ModConfigSpec.BooleanValue METRICS_WORLD_SAVE_ENABLED = BUILDER.gameRestart()
+			.comment("Enable the world save duration metric.")
+			.define("metrics.world_save", true);
 	//</editor-fold>
 
 	static final ModConfigSpec SPEC = BUILDER.build();
