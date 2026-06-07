@@ -17,6 +17,10 @@ public class Config {
 	public static final ModConfigSpec.ConfigValue<String> OTEL_URL = BUILDER.worldRestart()
 			.comment("OpenTelemetry Collector URL")
 			.define("otel.url", "", Config::urlValidator);
+	public static final ModConfigSpec.ConfigValue<String> OTEL_AUTH_TOKEN = BUILDER.worldRestart()
+			.comment("OpenTelemetry Authorization Header value.")
+			.comment("Needs to start with either \"Basic\" or \"Bearer\".")
+			.define("otel.auth", "", Config::authTokenValidator);
 	public static final ModConfigSpec.ConfigValue<String> SERVICE_NAME_OVERRIDE = BUILDER.worldRestart()
 			.comment("Override the value that is given to the \"service.name\" resource.")
 			.comment("If this value is empty the world name is used for this resource.")
@@ -84,6 +88,13 @@ public class Config {
 				TraceBullet.LOGGER.warn("Given OTel URL is malformed: {}", e.getMessage());
 				return false;
 			}
+		}
+		return false;
+	}
+
+	private static boolean authTokenValidator(Object element) {
+		if (element instanceof String authToken) {
+			return StringUtils.isBlank(authToken) || authToken.startsWith("Bearer") || authToken.startsWith("Basic");
 		}
 		return false;
 	}

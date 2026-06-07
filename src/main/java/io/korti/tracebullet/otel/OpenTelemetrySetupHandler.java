@@ -8,6 +8,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporter;
+import io.opentelemetry.exporter.otlp.http.metrics.OtlpHttpMetricExporterBuilder;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.AggregationTemporalitySelector;
@@ -17,12 +18,15 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.List;
 
 
 public class OpenTelemetrySetupHandler {
+
+	private static final String AUTHORIZATION_HEADER = "Authorization";
 
 	private OpenTelemetrySdk registeredSdk;
 
@@ -49,10 +53,16 @@ public class OpenTelemetrySetupHandler {
 			}
 		}
 
-		OtlpHttpMetricExporter metricExporter = OtlpHttpMetricExporter.builder()
+		String otelAuth = Config.OTEL_AUTH_TOKEN.get();
+
+		OtlpHttpMetricExporterBuilder metricExporterBuilder = OtlpHttpMetricExporter.builder()
 				.setEndpoint(otelEnvironment + "/v1/metrics")
-				.setAggregationTemporalitySelector(AggregationTemporalitySelector.alwaysCumulative())
-				.build();
+				.setAggregationTemporalitySelector(AggregationTemporalitySelector.alwaysCumulative());
+		if (StringUtils.isNotBlank(otelAuth)) {
+			metricExporterBuilder.addHeader(AUTHORIZATION_HEADER, otelAuth);
+		}
+
+		OtlpHttpMetricExporter metricExporter = metricExporterBuilder.build();
 
 		SdkMeterProvider meterProvider = SdkMeterProvider.builder()
 				.setResource(Resource.getDefault().merge(Resource.create(attributes.build())))
