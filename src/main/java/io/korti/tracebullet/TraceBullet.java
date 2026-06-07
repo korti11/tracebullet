@@ -7,14 +7,12 @@ import io.korti.tracebullet.otel.OpenTelemetrySetupHandler;
 import io.korti.tracebullet.threading.ThreadPool;
 import io.korti.tracebullet.threading.ThreadPoolManager;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
 
 import java.util.function.Supplier;
@@ -38,7 +36,6 @@ public class TraceBullet {
 		// Register ourselves for server and other game events we are interested in.
 		// Note that this is necessary if and only if we want *this* class (TraceBullet) to respond directly to events.
 		// Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
-		NeoForge.EVENT_BUS.register(this);
 		NeoForge.EVENT_BUS.register(new OpenTelemetrySetupHandler());
 
 		// Register our mod's ModConfigSpec so that FML can create and load the config file for us
@@ -46,9 +43,6 @@ public class TraceBullet {
 	}
 
 	private void commonSetup(FMLCommonSetupEvent event) {
-		// Some common setup code
-		LOGGER.info("HELLO FROM COMMON SETUP");
-
 		// Register thread pools
 		THREAD_POOL_MANAGER.registerScheduledThreadPool(ThreadPool.METRIC, Config.SCHEDULE_THREAD_POOL_SIZE);
 		NeoForge.EVENT_BUS.register(OpenTelemetryMetricRegistry.create(NeoForge.EVENT_BUS));
@@ -73,12 +67,5 @@ public class TraceBullet {
 		registerMetricIf(Config.METRICS_WORLD_SAVE_ENABLED, WorldSaveMetric::new);
 		registerMetricIf(Config.METRICS_SCHEDULED_TICK_ENABLED, ScheduledTickMetric::new);
 		registerMetricIf(Config.METRICS_CHUNK_GENERATION_ENABLED, ChunkGenerationMetric::new);
-	}
-
-	// You can use SubscribeEvent and let the Event Bus discover methods to call
-	@SubscribeEvent
-	public void onServerStarting(ServerStartingEvent event) {
-		// Do something when the server starts
-		LOGGER.info("HELLO from server starting");
 	}
 }

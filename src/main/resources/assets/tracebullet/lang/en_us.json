@@ -1,13 +1,63 @@
 {
-  "itemGroup.tracebullet": "Example Mod Tab",
-  "block.tracebullet.example_block": "Example Block",
-  "item.tracebullet.example_item": "Example Item",
+  "tracebullet.configuration.title": "Trace Bullet Configuration",
+  "tracebullet.configuration.section.tracebullet.common.toml": "Trace Bullet Configuration",
+  "tracebullet.configuration.section.tracebullet.common.toml.title": "Trace Bullet Configuration",
 
-  "tracebullet.configuration.title": "Trace Bullet Configs",
-  "tracebullet.configuration.section.tracebullet.common.toml": "Trace Bullet Configs",
-  "tracebullet.configuration.section.tracebullet.common.toml.title": "Trace Bullet Configs",
-  "tracebullet.configuration.items": "Item List",
-  "tracebullet.configuration.logDirtBlock": "Log Dirt Block",
-  "tracebullet.configuration.magicNumberIntroduction": "Magic Number Text",
-  "tracebullet.configuration.magicNumber": "Magic Number"
+  "tracebullet.configuration.otel": "OpenTelemetry",
+  "tracebullet.configuration.otel.tooltip": "OpenTelemetry export settings.",
+  "tracebullet.configuration.otel.button": "OpenTelemetry",
+
+  "tracebullet.configuration.url": "Collector URL",
+  "tracebullet.configuration.url.tooltip": "OTLP endpoint URL to export metrics to.",
+
+  "tracebullet.configuration.auth": "Authorization Header",
+  "tracebullet.configuration.auth.tooltip": "Authorization header value. Must start with \"Bearer\" or \"Basic\".",
+
+  "tracebullet.configuration.service_name_override": "Service Name Override",
+  "tracebullet.configuration.service_name_override.tooltip": "Overrides the service.name resource attribute. Defaults to the world name if left empty.",
+
+  "tracebullet.configuration.custom_attributes": "Custom Attributes",
+  "tracebullet.configuration.custom_attributes.tooltip": "Additional resource attributes added to all reported data. Format: key=value. Example: modpack.version=1.5.0",
+  "tracebullet.configuration.custom_attributes.button": "Custom Attributes",
+
+  "tracebullet.configuration.threading": "Threading",
+  "tracebullet.configuration.threading.tooltip": "Background thread pool settings.",
+  "tracebullet.configuration.threading.button": "Threading",
+
+  "tracebullet.configuration.schedule_thread_pool_size": "Thread Pool Size",
+  "tracebullet.configuration.schedule_thread_pool_size.tooltip": "Size of the background scheduled thread pool. Defaults to 25% of available processors. Range: 1-32.",
+
+  "tracebullet.configuration.metrics": "Metrics",
+  "tracebullet.configuration.metrics.tooltip": "Enable or disable individual metric groups.",
+  "tracebullet.configuration.metrics.button": "Metrics",
+
+  "tracebullet.configuration.tps": "TPS Metrics",
+  "tracebullet.configuration.tps.tooltip": "Enable TPS and tick time metrics.",
+
+  "tracebullet.configuration.player": "Player Metrics",
+  "tracebullet.configuration.player.tooltip": "Enable player count and latency metrics.",
+
+  "tracebullet.configuration.world_chunk": "World Chunk Metrics",
+  "tracebullet.configuration.world_chunk.tooltip": "Enable world chunk count metrics per dimension.",
+
+  "tracebullet.configuration.entity": "Entity Metrics",
+  "tracebullet.configuration.entity.tooltip": "Enable entity count metrics per dimension.",
+
+  "tracebullet.configuration.jvm": "JVM Metrics",
+  "tracebullet.configuration.jvm.tooltip": "Enable JVM memory, GC, thread, and class metrics.",
+
+  "tracebullet.configuration.block_entity": "Block Entity Metrics",
+  "tracebullet.configuration.block_entity.tooltip": "Enable block entity count metrics per dimension.",
+
+  "tracebullet.configuration.item_entity": "Item Entity Metrics",
+  "tracebullet.configuration.item_entity.tooltip": "Enable item entity (dropped item) count metrics per dimension.",
+
+  "tracebullet.configuration.world_save": "World Save Metrics",
+  "tracebullet.configuration.world_save.tooltip": "Enable world save duration histogram metrics per dimension.",
+
+  "tracebullet.configuration.scheduled_tick": "Scheduled Tick Metrics",
+  "tracebullet.configuration.scheduled_tick.tooltip": "Enable scheduled block and fluid tick queue size metrics per dimension.",
+
+  "tracebullet.configuration.chunk_generation": "Chunk Generation Metrics",
+  "tracebullet.configuration.chunk_generation.tooltip": "Enable chunk generation counter metrics."
 }
