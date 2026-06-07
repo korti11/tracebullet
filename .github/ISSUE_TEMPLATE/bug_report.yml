@@ -1,0 +1,63 @@
+name: Bug Report
+description: Report a bug in TraceBullet
+labels: ["bug"]
+body:
+  - type: input
+    id: tracebullet-version
+    attributes:
+      label: TraceBullet version
+      placeholder: "e.g. 1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: mc-version
+    attributes:
+      label: Minecraft / NeoForge version
+      placeholder: "e.g. 26.1.2 / NeoForge 26.1.2.71"
+    validations:
+      required: true
+
+  - type: input
+    id: otel-collector
+    attributes:
+      label: OTel collector / backend
+      placeholder: "e.g. OpenTelemetry Collector contrib 0.120.0 + Prometheus + Grafana"
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected to happen instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Configure otel.url to ...
+        2. Start the server
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Config (tracebullet-server.toml)
+      description: Paste your config, redacting any sensitive values such as auth tokens.
+      render: toml
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      render: text
+    validations:
+      required: false

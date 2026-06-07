@@ -1,0 +1,27 @@
+name: Feature Request
+description: Suggest a new metric or feature for TraceBullet
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like?
+      description: Describe the feature or metric you'd like to see added.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why is this useful?
+      description: What problem does it solve or what visibility does it add to the server?
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any links, Minecraft API references, or examples that might help.
+    validations:
+      required: false
