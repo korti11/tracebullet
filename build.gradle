@@ -23,6 +23,7 @@ sourceSets.main.resources {
 
     // Exclude common development only resources from finalized outputs
     exclude("**/*.bbmodel") // BlockBench project files
+    exclude("**/*.aseprite") // Aseprite source files
     exclude("src/generated/**/.cache") // datagen cache files
 }
 
@@ -150,6 +151,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_authors            : mod_authors,
             mod_description        : mod_description,
             mod_issue_tracker_url  : mod_issue_tracker_url,
+            mod_logo_file          : mod_logo_file,
     ]
     inputs.properties replaceProperties
     expand replaceProperties

@@ -1,4 +1,6 @@
-# TraceBullet
+<p>
+  <img src="src/main/resources/logo.png" alt="TraceBullet">
+</p>
 
 A [NeoForge](https://neoforged.net/) mod that instruments a Minecraft server with [OpenTelemetry](https://opentelemetry.io/), exporting metrics via OTLP to any compatible collector (Prometheus, Grafana Alloy, OpenTelemetry Collector, Dynatrace, etc.).
 
