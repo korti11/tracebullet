@@ -10,7 +10,7 @@
     }
   ],
   "__requires": [
-    { "type": "grafana",    "id": "grafana",    "name": "Grafana",      "version": "10.0.0" },
+    { "type": "grafana",    "id": "grafana",    "name": "Grafana",      "version": "13.0.0" },
     { "type": "datasource", "id": "prometheus", "name": "Prometheus",   "version": "1.0.0"  },
     { "type": "panel",      "id": "stat",       "name": "Stat",         "version": ""       },
     { "type": "panel",      "id": "timeseries", "name": "Time series",  "version": ""       },
@@ -959,37 +959,49 @@
         "mapping": "manual",
         "series": [
           {
-            "x": "chunk_pos_x",
-            "y": "chunk_pos_z",
+            "frame": 0,
+            "x":          "chunk_pos_x",
+            "y":          "chunk_pos_z",
+            "pointSize":  { "field": "Value", "fixed": 5, "min": 5, "max": 30 },
             "pointColor": { "field": "Value" },
-            "pointSize": { "field": "Value", "min": 5, "max": 30 },
-            "show": "points"
+            "show":       "points"
           }
         ],
-        "tooltip": { "mode": "single", "sort": "none" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "tooltip": { "mode": "single", "sort": "none", "hideZeros": false },
+        "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": [] }
       },
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "color": { "mode": "palette-classic" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 1    },
+              { "color": "orange", "value": 10   },
+              { "color": "red",    "value": 50   }
+            ]
+          },
+          "custom": {
+            "show": "points",
+            "pointSize": { "fixed": 5 },
+            "pointShape": "circle",
+            "pointStrokeWidth": 1,
+            "fillOpacity": 50,
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "scaleDistribution": { "type": "linear" },
+            "axisCenteredZero": false,
+            "hideFrom": { "tooltip": false, "viz": false, "legend": false }
+          }
         },
         "overrides": [
           {
             "matcher": { "id": "byName", "options": "Value" },
             "properties": [
-              { "id": "color", "value": { "mode": "thresholds" } },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    { "color": "green", "value": null },
-                    { "color": "yellow", "value": 1 },
-                    { "color": "orange", "value": 10 },
-                    { "color": "red", "value": 50 }
-                  ]
-                }
-              }
+              { "id": "color", "value": { "mode": "thresholds" } }
             ]
           }
         ]
@@ -1062,15 +1074,16 @@
         "mapping": "manual",
         "series": [
           {
-            "x": "chunk_pos_x",
-            "y": "chunk_pos_z",
+            "frame": 0,
+            "x":          "chunk_pos_x",
+            "y":          "chunk_pos_z",
+            "pointSize":  { "field": "Value", "fixed": 5, "min": 5, "max": 30 },
             "pointColor": { "field": "Value" },
-            "pointSize": { "field": "Value", "min": 5, "max": 30 },
-            "show": "points"
+            "show":       "points"
           }
         ],
-        "tooltip": { "mode": "single", "sort": "none" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "tooltip": { "mode": "single", "sort": "none", "hideZeros": false },
+        "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": [] }
       },
       "transformations": [
         {
@@ -1085,25 +1098,36 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "color": { "mode": "palette-classic" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 1    },
+              { "color": "orange", "value": 10   },
+              { "color": "red",    "value": 50   }
+            ]
+          },
+          "custom": {
+            "show": "points",
+            "pointSize": { "fixed": 5 },
+            "pointShape": "circle",
+            "pointStrokeWidth": 1,
+            "fillOpacity": 50,
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "scaleDistribution": { "type": "linear" },
+            "axisCenteredZero": false,
+            "hideFrom": { "tooltip": false, "viz": false, "legend": false }
+          }
         },
         "overrides": [
           {
             "matcher": { "id": "byName", "options": "Value" },
             "properties": [
-              { "id": "color", "value": { "mode": "thresholds" } },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    { "color": "green", "value": null },
-                    { "color": "yellow", "value": 1 },
-                    { "color": "orange", "value": 10 },
-                    { "color": "red", "value": 50 }
-                  ]
-                }
-              }
+              { "id": "color", "value": { "mode": "thresholds" } }
             ]
           }
         ]
@@ -1185,15 +1209,16 @@
         "mapping": "manual",
         "series": [
           {
-            "x": "chunk_pos_x",
-            "y": "chunk_pos_z",
+            "frame": 0,
+            "x":          "chunk_pos_x",
+            "y":          "chunk_pos_z",
+            "pointSize":  { "field": "Value", "fixed": 5, "min": 5, "max": 30 },
             "pointColor": { "field": "Value" },
-            "pointSize": { "field": "Value", "min": 5, "max": 30 },
-            "show": "points"
+            "show":       "points"
           }
         ],
-        "tooltip": { "mode": "single", "sort": "none" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "tooltip": { "mode": "single", "sort": "none", "hideZeros": false },
+        "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": [] }
       },
       "transformations": [
         {
@@ -1208,25 +1233,36 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "color": { "mode": "palette-classic" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 1    },
+              { "color": "orange", "value": 10   },
+              { "color": "red",    "value": 50   }
+            ]
+          },
+          "custom": {
+            "show": "points",
+            "pointSize": { "fixed": 5 },
+            "pointShape": "circle",
+            "pointStrokeWidth": 1,
+            "fillOpacity": 50,
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "axisColorMode": "text",
+            "axisBorderShow": false,
+            "scaleDistribution": { "type": "linear" },
+            "axisCenteredZero": false,
+            "hideFrom": { "tooltip": false, "viz": false, "legend": false }
+          }
         },
         "overrides": [
           {
             "matcher": { "id": "byName", "options": "Value" },
             "properties": [
-              { "id": "color", "value": { "mode": "thresholds" } },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    { "color": "green", "value": null },
-                    { "color": "yellow", "value": 1 },
-                    { "color": "orange", "value": 10 },
-                    { "color": "red", "value": 50 }
-                  ]
-                }
-              }
+              { "id": "color", "value": { "mode": "thresholds" } }
             ]
           }
         ]
