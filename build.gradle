@@ -175,7 +175,7 @@ dependencies {
 
     // Kotlin stdlib (required by OkIO/OkHttp)
     jarJar(implementation("org.jetbrains.kotlin:kotlin-stdlib")) {
-        version { strictly '[2.2.21]'; prefer '2.2.21' }
+        version { strictly '[2.2.21,3.0)'; prefer '2.2.21' }
     }
 }
 
