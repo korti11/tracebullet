@@ -58,6 +58,14 @@ public class ThreadPoolManager {
 		return scheduledExecutorServiceMap.get(threadPool);
 	}
 
+	public void shutdown() {
+		executorServiceMap.values().forEach(ExecutorService::shutdown);
+		scheduledExecutorServiceMap.values().forEach(ExecutorService::shutdown);
+
+		executorServiceMap.clear();
+		scheduledExecutorServiceMap.clear();
+	}
+
 	private static ThreadFactory createThreadFactory(ThreadPool threadPool) {
 		return BasicThreadFactory.builder()
 				.namingPattern("%s-%s-%%d".formatted(TraceBullet.MODID, threadPool.getName()))
