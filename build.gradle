@@ -120,23 +120,62 @@ configurations {
 }
 
 dependencies {
+    // OpenTelemetry API
     jarJar(implementation("io.opentelemetry:opentelemetry-api")) {
-        version {
-            strictly '[1.59.0]'
-            prefer '1.59.0'
-        }
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
     }
+    jarJar(implementation("io.opentelemetry:opentelemetry-context")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+    jarJar(implementation("io.opentelemetry:opentelemetry-common")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+
+    // OpenTelemetry SDK
     jarJar(implementation("io.opentelemetry:opentelemetry-sdk")) {
-        version {
-            strictly '[1.59.0]'
-            prefer '1.59.0'
-        }
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
     }
+    jarJar(implementation("io.opentelemetry:opentelemetry-sdk-common")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+    jarJar(implementation("io.opentelemetry:opentelemetry-sdk-metrics")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+    jarJar(implementation("io.opentelemetry:opentelemetry-sdk-trace")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+    jarJar(implementation("io.opentelemetry:opentelemetry-sdk-logs")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+    jarJar(implementation("io.opentelemetry:opentelemetry-sdk-extension-autoconfigure-spi")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+
+    // OpenTelemetry OTLP Exporter
     jarJar(implementation("io.opentelemetry:opentelemetry-exporter-otlp")) {
-        version {
-            strictly '[1.59.0]'
-            prefer '1.59.0'
-        }
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+    jarJar(implementation("io.opentelemetry:opentelemetry-exporter-otlp-common")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+    jarJar(implementation("io.opentelemetry:opentelemetry-exporter-common")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+    jarJar(implementation("io.opentelemetry:opentelemetry-exporter-sender-okhttp")) {
+        version { strictly '[1.59.0]'; prefer '1.59.0' }
+    }
+
+    // OkHttp HTTP sender (required by OTLP exporter)
+    jarJar(implementation("com.squareup.okhttp3:okhttp")) {
+        version { strictly '[5.3.2]'; prefer '5.3.2' }
+    }
+    jarJar(implementation("com.squareup.okio:okio")) {
+        version { strictly '[3.16.4]'; prefer '3.16.4' }
+    }
+
+    // Kotlin stdlib (required by OkIO/OkHttp)
+    jarJar(implementation("org.jetbrains.kotlin:kotlin-stdlib")) {
+        version { strictly '[2.2.21]'; prefer '2.2.21' }
     }
 }
 
